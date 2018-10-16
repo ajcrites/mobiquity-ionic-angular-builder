@@ -1,9 +1,10 @@
 import { BuildEvent, Builder, BuilderConfiguration, BuilderContext } from '@angular-devkit/architect';
-import { BrowserBuilder } from '@angular-devkit/build-angular/src/browser';
 import { BrowserBuilderSchema } from '@angular-devkit/build-angular/src/browser/schema';
 import { getSystemPath, join, normalize } from '@angular-devkit/core';
 import { Observable, of } from 'rxjs';
 import { concatMap, tap } from 'rxjs/operators';
+
+import { CustomWebpackBrowserBuilder } from '@angular-builders/custom-webpack';
 
 import { CordovaBuildBuilderSchema } from './schema';
 
@@ -13,10 +14,13 @@ export class CordovaBuildBuilder implements Builder<CordovaBuildBuilderSchema> {
   constructor(public context: BuilderContext) {}
 
   run(builderConfig: BuilderConfiguration<CordovaBuildBuilderSchema>): Observable<BuildEvent> {
-    const browserBuilder = new BrowserBuilder(this.context); // TODO: shouldn't this use `architect.getBuilder()`?
+    const browserBuilder = new CustomWebpackBrowserBuilder(this.context);
 
     return this.buildBrowserConfig(builderConfig.options).pipe(
-      concatMap(browserConfig => browserBuilder.run(browserConfig))
+      concatMap(browserConfig => {
+        (browserConfig as any).options.customWebpackConfig = {};
+        return browserBuilder.run(browserConfig);
+      })
     );
   }
 

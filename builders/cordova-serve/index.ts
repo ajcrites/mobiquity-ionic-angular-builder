@@ -6,6 +6,8 @@ import * as ζfs from 'fs';
 import { Observable, of } from 'rxjs';
 import { concatMap, tap } from 'rxjs/operators';
 
+import { CustomWebpackBrowserBuilder } from '@angular-builders/custom-webpack';
+
 import { CordovaBuildBuilder, CordovaBuildBuilderSchema } from '../cordova-build';
 
 import { CordovaServeBuilderSchema } from './schema';
@@ -47,9 +49,11 @@ class CordovaDevServerBuilder extends DevServerBuilder {
     const cordovaBuildTargetConfig = this.context.architect.getBuilderConfiguration<CordovaBuildBuilderSchema>(cordovaBuildTargetSpec);
 
     const builder = new CordovaBuildBuilder(this.context);
+    const customWebpackBuilder = new CustomWebpackBrowserBuilder(this.context);
     builder.prepareBrowserConfig(cordovaBuildTargetConfig.options, browserOptions);
 
-    return super.buildWebpackConfig(root, projectRoot, host, browserOptions);
+    (browserOptions as any).customWebpackConfig = {};
+    return customWebpackBuilder.buildWebpackConfig(root, projectRoot, host, browserOptions as any);
   }
 }
 
