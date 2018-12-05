@@ -1,6 +1,6 @@
 {
   "name": "mobiquity-ionic-angular-builder",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Schematics and builders for @ionic/angular apps using Mobiquity standards",
   "scripts": {
     "build": "tsc",
