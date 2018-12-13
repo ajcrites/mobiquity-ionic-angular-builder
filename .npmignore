@@ -2,3 +2,6 @@
 
 tsconfig.json
 tslint.js
+*.ts
+!*.d.ts
+!schematics/*/files/**/*.ts
