@@ -1,26 +1,18 @@
 import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { Routes, RouterModule } from '@angular/router';
 
-import { IonicModule } from '@ionic/angular';
-
+import { SharedModule } from 'src/app/shared/shared.module';
 import { <%= classify(name) %>Page } from './<%= dasherize(name) %>.page';
 
 const routes: Routes = [
   {
     path: '',
-    component: <%= classify(name) %>Page
-  }
+    component: <%= classify(name) %>Page,
+  },
 ];
 
 @NgModule({
-  imports: [
-    CommonModule,
-    FormsModule,
-    IonicModule,
-    RouterModule.forChild(routes)
-  ],
-  declarations: [<%= classify(name) %>Page]
+  imports: [SharedModule, RouterModule.forChild(routes)],
+  declarations: [<%= classify(name) %>Page],
 })
 export class <%= classify(name) %>PageModule {}

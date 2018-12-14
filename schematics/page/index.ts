@@ -191,13 +191,17 @@ export default function(options: PageOptions): Rule {
     validateHtmlSelector(options.selector);
 
     const templateSource = apply(url('./files'), [
-      options.spec ? noop() : filter(p => !p.endsWith('.spec.ts')),
+      options.spec ? noop() : filter(p => !p.endsWith('.test.ts')),
       template({
         ...strings,
         'if-flat': (s: string) => options.flat ? '' : s,
         ...options,
       }),
       move(parsedPath.path),
+      move(
+        `${parsedPath.path}/${options.name}/_tests_`,
+        `${parsedPath.path}/${options.name}/__tests__`
+      ),
     ]);
 
     return chain([
