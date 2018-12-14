@@ -1,19 +1,10 @@
-import { Component, OnInit } from '@angular/core';<% if(routePath) { %>
-import { ActivatedRoute, Params } from '@angular/router';<% } %>
+import { Component } from '@angular/core';
 
 @Component({
   selector: '<%= selector %>',
-  templateUrl: './<%= dasherize(name) %>.page.html',
-  styleUrls: ['./<%= dasherize(name) %>.page.<%= styleext %>'],
+  template: '<ion-content> </ion-content>',
+  styles: [],
 })
-export class <%= classify(name) %>Page implements OnInit {<% if(routePath) { %>
-
-  params: Params;<% } %>
-
-  constructor(<% if(routePath) { %>private route: ActivatedRoute<% } %>) { }
-
-  ngOnInit() {<% if(routePath) { %>
-    this.params = this.route.snapshot.params;<% } %>
-  }
+export class <%= classify(name) %>Page {
 
 }

@@ -1,7 +1,7 @@
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { <%= classify(name) %>Page } from './<%= dasherize(name) %>.page';
+import { <%= classify(name) %>Page } from '../<%= dasherize(name) %>.page';
 
 describe('<%= classify(name) %>Page', () => {
   let component: <%= classify(name) %>Page;
@@ -21,7 +21,7 @@ describe('<%= classify(name) %>Page', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
+  test('creates component', () => {
     expect(component).toBeTruthy();
   });
 });
