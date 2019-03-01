@@ -1,4 +1,4 @@
-import { BuildEvent, Builder, BuilderConfiguration, BuilderContext } from '@angular-devkit/architect';
+import { BuildEvent, Builder, BuilderConfiguration, BuilderContext, BuilderDescription } from '@angular-devkit/architect';
 import { BrowserBuilderSchema } from '@angular-devkit/build-angular/src/browser/schema';
 import { getSystemPath, join, normalize } from '@angular-devkit/core';
 import { Observable, of } from 'rxjs';
@@ -14,25 +14,36 @@ export class CordovaBuildBuilder implements Builder<CordovaBuildBuilderSchema> {
   constructor(public context: BuilderContext) {}
 
   run(builderConfig: BuilderConfiguration<CordovaBuildBuilderSchema>): Observable<BuildEvent> {
+    const [ project, target, configuration ] = builderConfig.options.browserTarget.split(':');
+    const browserTargetSpec = { project, target, configuration, overrides: {} };
     const browserBuilder = new CustomWebpackBrowserBuilder(this.context);
 
-    return this.buildBrowserConfig(builderConfig.options).pipe(
-      concatMap(browserConfig => {
+    let browserConfig = this.context.architect.getBuilderConfiguration<BrowserBuilderSchema>(browserTargetSpec);
+    let browserDescription: BuilderDescription;
+
+    return of(null).pipe(
+      concatMap(() => this.context.architect.getBuilderDescription(browserConfig)),
+      tap(description => browserDescription = description),
+      concatMap(() => this.context.architect.validateBuilderOptions(browserConfig, browserDescription)),
+      tap(config => browserConfig = config),
+      tap(() => this.validateBuilderConfig(builderConfig.options)),
+      tap(() => this.prepareBrowserConfig(builderConfig.options, browserConfig.options)),
+      concatMap(() => {
         (browserConfig as any).options.customWebpackConfig = {};
         return browserBuilder.run(browserConfig);
       })
     );
   }
 
-  buildBrowserConfig(options: CordovaBuildBuilderSchema): Observable<BuilderConfiguration<BrowserBuilderSchema>> {
-    let browserConfig: BuilderConfiguration<BrowserBuilderSchema>;
+  validateBuilderConfig(builderOptions: CordovaBuildBuilderSchema) {
+    // if we're mocking cordova.js, don't build cordova bundle
+    if (builderOptions.cordovaMock) {
+      builderOptions.cordovaAssets = false;
+    }
 
-    return of(null).pipe(// tslint:disable-line:no-null-keyword
-      concatMap(() => this._getBrowserConfig(options)),
-      tap(config => browserConfig = config),
-      tap(() => this.prepareBrowserConfig(options, browserConfig.options)),
-      concatMap(() => of(browserConfig))
-    );
+    if (builderOptions.cordovaAssets && !builderOptions.platform) {
+      throw new Error('The `--platform` option is required with `--cordova-assets`');
+    }
   }
 
   // Mutates browserOptions
@@ -43,7 +54,17 @@ export class CordovaBuildBuilder implements Builder<CordovaBuildBuilderSchema> {
     // requirement of Cordova.
     browserOptions.outputPath = join(cordovaBasePath, normalize('www'));
 
-    if (options.cordovaAssets) {
+    // Cordova CLI will error if `www` is missing. The Angular CLI deletes it
+    // by default. Let's keep it around.
+    browserOptions.deleteOutputPath = false;
+
+    if (options.cordovaMock) {
+      browserOptions.scripts.push({
+        input: getSystemPath(join(normalize(__dirname), normalize('cordova.js'))),
+        bundleName: 'cordova',
+        lazy: false,
+      });
+    } else if (options.cordovaAssets) {
       const platformWWWPath = join(cordovaBasePath, normalize(`platforms/${options.platform}/platform_www`));
 
       // Add Cordova www assets that were generated whenever platform(s) and
@@ -63,17 +84,6 @@ export class CordovaBuildBuilder implements Builder<CordovaBuildBuilderSchema> {
         lazy: false,
       });
     }
-  }
-
-  protected _getBrowserConfig(options: CordovaBuildBuilderSchema): Observable<BuilderConfiguration<BrowserBuilderSchema>> {
-    const { architect } = this.context;
-    const [ project, target, configuration ] = options.browserTarget.split(':');
-    const browserTargetSpec = { project, target, configuration, overrides: {} };
-    const builderConfig = architect.getBuilderConfiguration<BrowserBuilderSchema>(browserTargetSpec);
-
-    return architect.getBuilderDescription(builderConfig).pipe(
-      concatMap(browserDescription => architect.validateBuilderOptions(builderConfig, browserDescription))
-    );
   }
 }
 
