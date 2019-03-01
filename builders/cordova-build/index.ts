@@ -4,7 +4,6 @@ import { getSystemPath, join, normalize } from '@angular-devkit/core';
 import { Observable, of } from 'rxjs';
 import { concatMap, tap } from 'rxjs/operators';
 
-// @ts-ignore
 import { CustomWebpackBrowserBuilder } from '@angular-builders/custom-webpack';
 
 import { CordovaBuildBuilderSchema } from './schema';
@@ -22,17 +21,29 @@ export class CordovaBuildBuilder implements Builder<CordovaBuildBuilderSchema> {
     let browserConfig = this.context.architect.getBuilderConfiguration<BrowserBuilderSchema>(browserTargetSpec);
     let browserDescription: BuilderDescription;
 
-    return of(null).pipe(// tslint:disable-line:no-null-keyword
+    return of(null).pipe(
       concatMap(() => this.context.architect.getBuilderDescription(browserConfig)),
       tap(description => browserDescription = description),
       concatMap(() => this.context.architect.validateBuilderOptions(browserConfig, browserDescription)),
       tap(config => browserConfig = config),
+      tap(() => this.validateBuilderConfig(builderConfig.options)),
       tap(() => this.prepareBrowserConfig(builderConfig.options, browserConfig.options)),
       concatMap(() => {
         (browserConfig as any).options.customWebpackConfig = {};
         return browserBuilder.run(browserConfig);
       })
     );
+  }
+
+  validateBuilderConfig(builderOptions: CordovaBuildBuilderSchema) {
+    // if we're mocking cordova.js, don't build cordova bundle
+    if (builderOptions.cordovaMock) {
+      builderOptions.cordovaAssets = false;
+    }
+
+    if (builderOptions.cordovaAssets && !builderOptions.platform) {
+      throw new Error('The `--platform` option is required with `--cordova-assets`');
+    }
   }
 
   // Mutates browserOptions
@@ -43,7 +54,17 @@ export class CordovaBuildBuilder implements Builder<CordovaBuildBuilderSchema> {
     // requirement of Cordova.
     browserOptions.outputPath = join(cordovaBasePath, normalize('www'));
 
-    if (options.cordovaAssets) {
+    // Cordova CLI will error if `www` is missing. The Angular CLI deletes it
+    // by default. Let's keep it around.
+    browserOptions.deleteOutputPath = false;
+
+    if (options.cordovaMock) {
+      browserOptions.scripts.push({
+        input: getSystemPath(join(normalize(__dirname), normalize('cordova.js'))),
+        bundleName: 'cordova',
+        lazy: false,
+      });
+    } else if (options.cordovaAssets) {
       const platformWWWPath = join(cordovaBasePath, normalize(`platforms/${options.platform}/platform_www`));
 
       // Add Cordova www assets that were generated whenever platform(s) and

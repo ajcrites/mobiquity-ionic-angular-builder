@@ -4,4 +4,5 @@ export interface CordovaBuildBuilderSchema {
   cordovaBasePath?: string;
   sourceMap?: boolean;
   cordovaAssets?: boolean;
+  cordovaMock?: boolean;
 }
