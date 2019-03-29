@@ -1,6 +1,6 @@
 {
   "name": "mobiquity-ionic-angular-schematics",
-  "version": "1.0.0-beta.0",
+  "version": "1.0.0",
   "license": "MIT",
   "description": "Schematics and builders for @ionic/angular apps using Mobiquity standards",
   "scripts": {
