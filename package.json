@@ -1,36 +1,25 @@
 {
   "name": "mobiquity-ionic-angular-builder",
-  "version": "2.0.0",
+  "version": "3.0.0-beta.0",
+  "license": "MIT",
   "description": "Schematics and builders for @ionic/angular apps using Mobiquity standards",
   "scripts": {
     "build": "tsc",
-    "watch": "tsc -w",
     "prepublishOnly": "npm run build"
   },
   "peerDependencies": {
-    "@angular-builders/custom-webpack": ">=7.0.0",
-    "@angular-devkit/architect": ">=0.7.2 <7.0.0",
-    "@angular-devkit/build-angular": ">=0.7.2 <7.0.0",
     "@angular-devkit/core": ">=7.0.0",
     "@angular-devkit/schematics": ">=7.0.0"
   },
   "builders": "./builders.json",
   "schematics": "./collection.json",
   "dependencies": {
-    "@angular-builders/custom-webpack": "7.3.1",
     "@schematics/angular": "7.3.4",
-    "tslib": "1.9.3",
     "typescript": "3.2.4"
   },
   "devDependencies": {
-    "@angular-devkit/architect": "0.13.4",
-    "@angular-devkit/build-angular": "0.13.4",
     "@angular-devkit/core": "7.3.4",
-    "@angular-devkit/schematics": "7.3.4",
-    "@types/node": "11.9.6",
-    "@types/webpack": "4.4.25",
-    "@types/webpack-dev-server": "3.1.2",
-    "rimraf": "2.6.3",
-    "tslint-ionic-rules": "0.0.21"
-  }
+    "@angular-devkit/schematics": "7.3.4"
+  },
+  "repository": "github:ajcrites/mobiquity-ionic-angular-schematics"
 }
